@@ -7,7 +7,7 @@ if [ `find / -name "mysql*release*rpm*"|wc -l` -ne 0 ];then
 	echo -e "yes,you have the mysql rpm package,it's in :\n$mysql_rpm_package\n"  
 else    
 	echo -e "you don't have the mysql rpm pakage,now we start download\n------------------------"  
-	wget https://repo.mysql.com//mysql57-community-release-el7-11.noarch.rpm  
+	wget https://repo.mysql.com/mysql57-community-release-el7-11.noarch.rpm  
 	echo -e "complete download mysql rpm\n"  
 fi  
 
