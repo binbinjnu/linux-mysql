@@ -68,6 +68,7 @@ CREATE USER 'leishen'@'localhost' IDENTIFIED BY 'leishen123456';
 GRANT ALL ON *.* TO 'leishen'@'localhost';
 CREATE USER 'leishen'@'%' IDENTIFIED BY 'leishen123456';
 GRANT ALL ON *.* TO 'leishen'@'%';
+\q
 
 EOF
 
