@@ -1,0 +1,62 @@
+查询缓存的工作机制
+Mysql 判断是否命中缓存的办法很简单，首先会将要缓存的结果放在引用表中，然后使用查询语句，数据库名称，
+客户端协议的版本等因素算出一个hash值，这个hash值与引用表中的结果相关联。
+如果在执行查询时，根据一些相关的条件算出的hash值能与引用表中的数据相关联，则表示查询命中
+
+通过have_query_cache服务器系统变量指示查询缓存是否可用：
+
+mysql> SHOW VARIABLES LIKE 'have_query_cache';
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| have_query_cache | YES   |
++------------------+-------+
+为了监视查询缓存性能，使用SHOW STATUS查看缓存状态变量：
+
+mysql> SHOW STATUS LIKE 'Qcache%';
++-------------------------+--------+
+|变量名                   |值 |
++-------------------------+--------+
+| Qcache_free_blocks      | 36     |
+| Qcache_free_memory      | 138488 |
+| Qcache_hits             | 79570  |
+| Qcache_inserts          | 27087  |
+| Qcache_lowmem_prunes    | 3114   |
+| Qcache_not_cached       | 22989  |
+| Qcache_queries_in_cache | 415    |
+| Qcache_total_blocks     | 912    |
++-------------------------+--------+
+
+
+配置参数
+MYSQL提供了一些参数来控制查询缓存的行为，参数如下
+
+· query_cache_limit
+
+MYSQL能够缓存的最大查询结果，查询结果大于该值时不会被缓存。默认值是1048576(1MB)
+
+如果某个查询的结果超出了这个值，Qcache_not_cached的值会加1，如果某个操作总是超出可以考虑在SQL中加上SQL_NO_CACHE来避免额外的消耗
+
+· query_cache_min_res_unit
+
+查询缓存分配的最小块的大小(字节)。 默认值是4096(4KB)。
+
+· query_cache_size
+
+为缓存查询结果分配的内存的数量，单位是字节，且数值必须是1024的整数倍。默认值是0，即禁用查询缓存。请注意即使query_cache_type设置为0也将分配此数量的内存。
+
+· query_cache_type
+
+设置查询缓存类型。设置GLOBAL值可以设置后面的所有客户端连接的类型。客户端可以设置SESSION值以影响他们自己对查询缓存的使用。下面的表显示了可能的值：
+
+选项      描述
+0或OFF    不要缓存或查询结果。请注意这样不会取消分配的查询缓存区。要想取消，你应将query_cache_size设置为0。
+1或ON     缓存除了以SELECT SQL_NO_CACHE开头的所有查询结果。
+2或DEMAND 只缓存以SELECT SQL_NO_CACHE开头的查询结果。
+
+该变量默认设为ON。
+
+· query_cache_wlock_invalidate
+
+一般情况，当客户端对MyISAM表进行WRITE锁定时，如果查询结果位于查询缓存中，则其它客户端未被锁定，可以对该表进行查询。
+将该变量设置为1，则可以对表进行WRITE锁定，使查询缓存内所有对该表进行的查询变得非法。这样当锁定生效时，可以强制其它试图访问表的客户端来等待。
